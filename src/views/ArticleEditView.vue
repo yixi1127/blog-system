@@ -123,7 +123,7 @@
 import { ref, reactive, onMounted } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import { message } from "ant-design-vue";
-import { createArticle, updateArticle } from "../api/article";
+import { createArticle, updateArticle, getArticleDetail } from "../api/article";
 import { getCategoryList } from "../api/category";
 
 const router = useRouter();
@@ -160,19 +160,18 @@ const loadCategories = async () => {
 // 加载文章数据（编辑模式）
 const loadArticle = async (id: string) => {
   try {
-    // 暂时注释掉，因为还没有实现获取单篇文章的 API
-    // const article = await getArticleDetail(Number(id));
-    // Object.assign(formState, {
-    //   title: article.title,
-    //   category: article.category,
-    //   tags: article.tags,
-    //   content: article.content,
-    //   summary: article.summary,
-    //   status: article.status,
-    // });
-    message.warning("编辑功能暂未完善，请先使用创建功能");
-  } catch (error) {
-    message.error("加载文章失败");
+    const result = await getArticleDetail(Number(id));
+    const article = result.article;
+    Object.assign(formState, {
+      title: article.title,
+      category: article.category,
+      tags: article.tags,
+      content: article.content,
+      summary: article.summary,
+      status: article.status,
+    });
+  } catch (error: any) {
+    message.error(error.message || "加载文章失败");
     console.error(error);
   }
 };

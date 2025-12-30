@@ -29,6 +29,11 @@ export const getArticleList = (params?: ArticleListParams) => {
   return get('/.netlify/functions/article-list', params);
 };
 
+// 获取文章详情
+export const getArticleDetail = (id: number) => {
+  return get('/.netlify/functions/article-detail', { id: id.toString() });
+};
+
 // 创建文章
 export const createArticle = (data: Article) => {
   return post('/.netlify/functions/article-create', data);

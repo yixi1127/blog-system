@@ -89,7 +89,8 @@ import { ref, reactive, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import { message } from "ant-design-vue";
 import { PlusOutlined } from "@ant-design/icons-vue";
-import { articleApi, categoryApi } from "../later/api";
+import { getArticleList, deleteArticle, updateArticle } from "../api/article";
+import { getCategoryList } from "../api/category";
 
 const router = useRouter();
 
@@ -169,8 +170,8 @@ const pagination = reactive({
 // 加载分类列表
 const loadCategories = async () => {
   try {
-    const data = await categoryApi.getList();
-    categories.value = data;
+    const data = await getCategoryList();
+    categories.value = data.list || [];
   } catch (error) {
     console.error("加载分类失败", error);
   }
@@ -180,7 +181,7 @@ const loadCategories = async () => {
 const loadDrafts = async () => {
   loading.value = true;
   try {
-    const result = await articleApi.getList({
+    const result = await getArticleList({
       title: searchTitle.value,
       category: filterCategory.value,
       status: "draft", // 只获取草稿
@@ -190,8 +191,8 @@ const loadDrafts = async () => {
 
     draftList.value = result.list;
     pagination.total = result.total;
-  } catch (error) {
-    message.error("加载草稿列表失败");
+  } catch (error: any) {
+    message.error(error.message || "加载草稿列表失败");
     console.error(error);
   } finally {
     loading.value = false;
@@ -224,11 +225,11 @@ const handleEdit = (record: any) => {
 // 发布草稿
 const handlePublish = async (record: any) => {
   try {
-    await articleApi.update(record.id, { status: "published" });
+    await updateArticle({ id: record.id, status: "published" });
     message.success("发布成功");
     loadDrafts();
-  } catch (error) {
-    message.error("发布失败");
+  } catch (error: any) {
+    message.error(error.message || "发布失败");
     console.error(error);
   }
 };
@@ -236,11 +237,11 @@ const handlePublish = async (record: any) => {
 // 删除草稿
 const handleDelete = async (record: any) => {
   try {
-    await articleApi.delete(record.id);
+    await deleteArticle(record.id);
     message.success("删除成功");
     loadDrafts();
-  } catch (error) {
-    message.error("删除失败");
+  } catch (error: any) {
+    message.error(error.message || "删除失败");
     console.error(error);
   }
 };

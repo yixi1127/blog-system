@@ -67,8 +67,7 @@
 import { ref, onMounted } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import { message } from "ant-design-vue";
-import { articleApi } from "../later/api";
-import type { Article } from "../later/storage";
+import { getArticleDetail } from "../api/article";
 
 const router = useRouter();
 const route = useRoute();
@@ -76,7 +75,7 @@ const route = useRoute();
 const loading = ref(false);
 
 // 文章数据
-const article = ref<Article>({
+const article = ref({
   id: 0,
   title: "",
   content: "",
@@ -86,7 +85,7 @@ const article = ref<Article>({
   author: "",
   createTime: "",
   updateTime: "",
-  status: "draft",
+  status: "draft" as "draft" | "published",
   views: 0,
   likes: 0,
   comments: 0,
@@ -97,10 +96,10 @@ const loadArticle = async () => {
   loading.value = true;
   try {
     const articleId = Number(route.params.id);
-    const data = await articleApi.getDetail(articleId);
-    article.value = data;
-  } catch (error) {
-    message.error("加载文章失败");
+    const result = await getArticleDetail(articleId);
+    article.value = result.article;
+  } catch (error: any) {
+    message.error(error.message || "加载文章失败");
     console.error(error);
   } finally {
     loading.value = false;
