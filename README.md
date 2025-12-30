@@ -1,24 +1,184 @@
-# user-center-frontend-vue
+# 博客文章管理系统
 
-## Project setup
-```
+基于 Vue3 + TypeScript + Ant Design Vue 开发的博客文章管理系统，实现了真实的数据持久化存储。
+
+## ✨ 核心特性
+
+- ✅ **真实数据存储**：使用 localStorage 实现数据持久化，不是虚假演示数据
+- ✅ **完整功能**：文章管理、分类管理、搜索筛选、分页显示
+- ✅ **类型安全**：使用 TypeScript 开发，完整的类型定义
+- ✅ **清晰架构**：分层设计，便于维护和扩展
+- ✅ **用户友好**：响应式设计，操作提示，数据验证
+
+## 🚀 快速开始
+
+### 安装依赖
+```bash
 npm install
 ```
 
-### Compiles and hot-reloads for development
-```
+### 启动开发服务器
+```bash
 npm run serve
 ```
 
-### Compiles and minifies for production
+### 访问系统
+打开浏览器访问：http://localhost:8080
+
+## 📚 文档
+
+- **[快速开始.md](./快速开始.md)** - 一分钟启动指南
+- **[使用说明.md](./使用说明.md)** - 完整功能说明和使用指南
+- **[功能验证清单.md](./功能验证清单.md)** - 详细的测试步骤
+- **[项目实现总结.md](./项目实现总结.md)** - 技术实现详解
+- **[项目交付清单.md](./项目交付清单.md)** - 完整的交付清单
+- **[src/later/README.md](./src/later/README.md)** - 数据存储模块说明
+
+## 🎯 主要功能
+
+### 文章管理
+- 文章列表展示（支持分页）
+- 文章搜索（按标题）
+- 文章筛选（按分类、状态）
+- 新建文章（真实保存）
+- 编辑文章（真实更新）
+- 查看文章详情
+- 删除文章（真实删除）
+- 文章预览功能
+- 草稿/发布状态管理
+
+### 分类管理
+- 分类列表展示
+- 新建分类（真实保存）
+- 编辑分类（真实更新）
+- 删除分类（真实删除）
+- 自动统计分类文章数量
+
+### 数据持久化
+- 使用 localStorage 存储
+- 刷新页面数据不丢失
+- 自动初始化默认数据
+- 自动维护数据关联
+
+## 🔧 技术栈
+
+- **Vue 3.2.13** - 使用 Composition API
+- **TypeScript 5.9.3** - 类型安全
+- **Vue Router 4.6.4** - 路由管理
+- **Ant Design Vue 4.2.6** - UI 组件库
+- **localStorage** - 数据持久化
+
+## 📁 项目结构
+
 ```
+src/
+├── later/              # 数据存储模块 ⭐
+│   ├── storage.ts      # 存储服务层
+│   ├── api.ts          # API 服务层
+│   └── README.md       # 模块说明
+├── views/              # 页面组件
+│   ├── ArticleListView.vue      # 文章列表
+│   ├── ArticleEditView.vue      # 文章编辑
+│   ├── ArticleDetailView.vue    # 文章详情
+│   └── CategoryManageView.vue   # 分类管理
+├── components/         # 公共组件
+├── router/            # 路由配置
+├── App.vue            # 根组件
+└── main.ts            # 入口文件
+```
+
+## 🎨 页面路由
+
+| 页面 | 路径 | 功能 |
+|------|------|------|
+| 首页 | `/` | 欢迎页面 |
+| 文章列表 | `/article/list` | 查看所有文章 |
+| 新建文章 | `/article/create` | 创建新文章 |
+| 文章详情 | `/article/view/:id` | 查看文章 |
+| 编辑文章 | `/article/edit/:id` | 编辑文章 |
+| 分类管理 | `/category/manage` | 管理分类 |
+
+## 💡 数据说明
+
+### 默认数据
+系统首次运行时会自动初始化：
+- 3 个分类（技术文章、生活随笔、学习笔记）
+- 2 篇示例文章
+- 1 个默认用户（张三）
+
+### 数据存储
+所有数据存储在浏览器的 localStorage 中：
+- `blog_articles` - 文章数据
+- `blog_categories` - 分类数据
+- `blog_user` - 用户信息
+
+## 🔨 构建命令
+
+### 开发环境
+```bash
+npm run serve
+```
+
+### 生产构建
+```bash
 npm run build
 ```
 
-### Lints and fixes files
-```
+### 代码检查
+```bash
 npm run lint
 ```
 
-### Customize configuration
-See [Configuration Reference](https://cli.vuejs.org/config/).
+## 📝 使用示例
+
+### 创建一篇文章
+1. 访问文章列表页面
+2. 点击"新建文章"按钮
+3. 填写文章信息
+4. 选择发布状态
+5. 点击"发布文章"
+6. 文章自动保存到 localStorage
+
+### 管理分类
+1. 访问分类管理页面
+2. 点击"新建分类"按钮
+3. 填写分类信息
+4. 点击"确定"
+5. 新分类立即可用
+
+## 🚀 后续扩展
+
+### 功能增强
+- 富文本编辑器（TinyMCE、Quill）
+- Markdown 编辑器（Vditor）
+- 图片上传功能
+- 文章评论系统
+- 全文搜索
+
+### 对接后端
+只需修改 `src/later/api.ts`，将 localStorage 调用替换为 HTTP 请求即可。
+
+## ⚠️ 注意事项
+
+- 数据仅存储在本地浏览器
+- 清除浏览器缓存会导致数据丢失
+- 不同浏览器/设备之间数据不共享
+- 建议定期备份重要内容
+
+## 📄 许可证
+
+MIT License
+
+## 👨‍💻 作者
+
+张三 - 23信计1班01号
+
+## 🙏 致谢
+
+感谢 Vue.js、Ant Design Vue 等开源项目的支持。
+
+---
+
+**项目状态：✅ 已完成，可以正常使用**
+
+更多详细信息请查看项目文档。
