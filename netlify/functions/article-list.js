@@ -52,11 +52,7 @@ exports.handler = async (event) => {
     // 构建查询
     let query = supabase
       .from('articles')
-      .select(`
-        *,
-        categories(name),
-        article_tags(tag)
-      `, { count: 'exact' })
+      .select('*', { count: 'exact' })
       .eq('author_id', userId);
 
     // 筛选条件
@@ -66,8 +62,18 @@ exports.handler = async (event) => {
     if (status) {
       query = query.eq('status', status);
     }
+
+    // 如果有分类筛选，先获取分类ID
     if (category) {
-      query = query.eq('categories.name', category);
+      const { data: categoryData } = await supabase
+        .from('categories')
+        .select('id')
+        .eq('name', category)
+        .single();
+      
+      if (categoryData) {
+        query = query.eq('category_id', categoryData.id);
+      }
     }
 
     // 排序和分页
@@ -81,21 +87,55 @@ exports.handler = async (event) => {
     const { data: articles, error, count } = await query;
 
     if (error) {
+      console.error('查询文章列表错误:', error);
       throw error;
     }
+
+    // 获取所有文章的分类和标签
+    const articleIds = articles.map(a => a.id);
+    
+    // 批量获取分类
+    const categoryIds = [...new Set(articles.map(a => a.category_id).filter(Boolean))];
+    const { data: categoriesData } = await supabase
+      .from('categories')
+      .select('id, name')
+      .in('id', categoryIds);
+    const categoryMap = new Map(categoriesData?.map(c => [c.id, c.name]) || []);
+
+    // 批量获取标签
+    const { data: tagsData } = await supabase
+      .from('article_tags')
+      .select('article_id, tag')
+      .in('article_id', articleIds);
+    const tagsMap = new Map();
+    tagsData?.forEach(t => {
+      if (!tagsMap.has(t.article_id)) {
+        tagsMap.set(t.article_id, []);
+      }
+      tagsMap.get(t.article_id).push(t.tag);
+    });
+
+    // 获取当前用户信息
+    const { data: userData } = await supabase
+      .from('users')
+      .select('username')
+      .eq('id', userId)
+      .single();
+    const authorName = userData?.username || '';
 
     // 格式化数据
     const formattedArticles = articles.map(article => ({
       id: article.id,
       title: article.title,
       content: article.content,
-      summary: article.summary,
-      category: article.categories?.name || '',
-      tags: article.article_tags?.map(t => t.tag) || [],
+      summary: article.summary || '',
+      category: categoryMap.get(article.category_id) || '',
+      tags: tagsMap.get(article.id) || [],
       status: article.status,
-      views: article.views,
-      likes: article.likes,
-      comments: article.comments,
+      author: authorName,
+      views: article.views || 0,
+      likes: article.likes || 0,
+      comments: article.comments || 0,
       createTime: article.created_at,
       updateTime: article.updated_at
     }));

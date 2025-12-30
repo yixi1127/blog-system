@@ -142,12 +142,7 @@ const columns = [
     key: "tags",
     width: 200,
   },
-  {
-    title: "作者",
-    dataIndex: "author",
-    key: "author",
-    width: 100,
-  },
+
   {
     title: "状态",
     dataIndex: "status",

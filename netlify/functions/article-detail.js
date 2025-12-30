@@ -55,38 +55,59 @@ exports.handler = async (event) => {
     }
 
     // 获取文章详情
-    const { data: article, error } = await supabase
+    const { data: article, error: articleError } = await supabase
       .from('articles')
-      .select(`
-        *,
-        categories(name),
-        article_tags(tag),
-        users(username)
-      `)
+      .select('*')
       .eq('id', articleId)
       .eq('author_id', userId)
       .single();
 
-    if (error || !article) {
+    if (articleError || !article) {
+      console.error('获取文章错误:', articleError);
       return {
         statusCode: 404,
         body: JSON.stringify({ error: '文章不存在或无权访问' })
       };
     }
 
+    // 获取分类名称
+    let categoryName = '';
+    if (article.category_id) {
+      const { data: categoryData } = await supabase
+        .from('categories')
+        .select('name')
+        .eq('id', article.category_id)
+        .single();
+      categoryName = categoryData?.name || '';
+    }
+
+    // 获取标签
+    const { data: tagsData } = await supabase
+      .from('article_tags')
+      .select('tag')
+      .eq('article_id', articleId);
+    const tags = tagsData?.map(t => t.tag) || [];
+
+    // 获取作者信息
+    const { data: userData } = await supabase
+      .from('users')
+      .select('username')
+      .eq('id', article.author_id)
+      .single();
+
     // 格式化数据
     const formattedArticle = {
       id: article.id,
       title: article.title,
       content: article.content,
-      summary: article.summary,
-      category: article.categories?.name || '',
-      tags: article.article_tags?.map(t => t.tag) || [],
+      summary: article.summary || '',
+      category: categoryName,
+      tags: tags,
       status: article.status,
-      author: article.users?.username || '',
-      views: article.views,
-      likes: article.likes,
-      comments: article.comments,
+      author: userData?.username || '',
+      views: article.views || 0,
+      likes: article.likes || 0,
+      comments: article.comments || 0,
       createTime: article.created_at,
       updateTime: article.updated_at
     };
