@@ -101,7 +101,8 @@ import { ref, reactive, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import { message } from "ant-design-vue";
 import { PlusOutlined } from "@ant-design/icons-vue";
-import { articleApi, categoryApi } from "../later/api";
+import { getArticleList, deleteArticle } from "../api/article";
+import { getCategoryList } from "../api/category";
 
 const router = useRouter();
 
@@ -182,8 +183,8 @@ const pagination = reactive({
 // 加载分类列表
 const loadCategories = async () => {
   try {
-    const data = await categoryApi.getList();
-    categories.value = data;
+    const data = await getCategoryList();
+    categories.value = data.list || [];
   } catch (error) {
     console.error("加载分类失败", error);
   }
@@ -193,7 +194,7 @@ const loadCategories = async () => {
 const loadArticles = async () => {
   loading.value = true;
   try {
-    const result = await articleApi.getList({
+    const result = await getArticleList({
       title: searchTitle.value,
       category: filterCategory.value,
       status: filterStatus.value,
@@ -203,8 +204,8 @@ const loadArticles = async () => {
 
     articleList.value = result.list;
     pagination.total = result.total;
-  } catch (error) {
-    message.error("加载文章列表失败");
+  } catch (error: any) {
+    message.error(error.message || "加载文章列表失败");
     console.error(error);
   } finally {
     loading.value = false;
@@ -242,11 +243,11 @@ const handleEdit = (record: any) => {
 // 删除文章
 const handleDelete = async (record: any) => {
   try {
-    await articleApi.delete(record.id);
+    await deleteArticle(record.id);
     message.success("删除成功");
     loadArticles();
-  } catch (error) {
-    message.error("删除失败");
+  } catch (error: any) {
+    message.error(error.message || "删除失败");
     console.error(error);
   }
 };

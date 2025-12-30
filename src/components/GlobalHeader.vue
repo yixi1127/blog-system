@@ -92,12 +92,13 @@ const selectedKeys = ref(["/"]);
 // 用户信息
 const userInfo = ref({
   username: "",
-  token: "",
+  email: "",
 });
 
 // 是否已登录
 const isLoggedIn = computed(() => {
-  return !!userInfo.value.token;
+  const token = localStorage.getItem('token');
+  return !!token && !!userInfo.value.username;
 });
 
 // 菜单点击
@@ -123,7 +124,8 @@ const goToRegister = () => {
 // 退出登录
 const handleLogout = () => {
   localStorage.removeItem("userInfo");
-  userInfo.value = { username: "", token: "" };
+  localStorage.removeItem("token");
+  userInfo.value = { username: "", email: "" };
   message.success("退出登录成功");
   router.push("/user/login");
 };

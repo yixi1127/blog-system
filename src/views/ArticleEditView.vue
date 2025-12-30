@@ -123,7 +123,8 @@
 import { ref, reactive, onMounted } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import { message } from "ant-design-vue";
-import { articleApi, categoryApi } from "../later/api";
+import { createArticle, updateArticle } from "../api/article";
+import { getCategoryList } from "../api/category";
 
 const router = useRouter();
 const route = useRoute();
@@ -149,8 +150,8 @@ const formState = reactive({
 // 加载分类列表
 const loadCategories = async () => {
   try {
-    const data = await categoryApi.getList();
-    categories.value = data;
+    const data = await getCategoryList();
+    categories.value = data.list || [];
   } catch (error) {
     console.error("加载分类失败", error);
   }
@@ -159,15 +160,17 @@ const loadCategories = async () => {
 // 加载文章数据（编辑模式）
 const loadArticle = async (id: string) => {
   try {
-    const article = await articleApi.getDetail(Number(id));
-    Object.assign(formState, {
-      title: article.title,
-      category: article.category,
-      tags: article.tags,
-      content: article.content,
-      summary: article.summary,
-      status: article.status,
-    });
+    // 暂时注释掉，因为还没有实现获取单篇文章的 API
+    // const article = await getArticleDetail(Number(id));
+    // Object.assign(formState, {
+    //   title: article.title,
+    //   category: article.category,
+    //   tags: article.tags,
+    //   content: article.content,
+    //   summary: article.summary,
+    //   status: article.status,
+    // });
+    message.warning("编辑功能暂未完善，请先使用创建功能");
   } catch (error) {
     message.error("加载文章失败");
     console.error(error);
@@ -181,16 +184,19 @@ const handleSubmit = async () => {
     if (isEdit.value) {
       // 更新文章
       const articleId = Number(route.params.id);
-      await articleApi.update(articleId, formState);
+      await updateArticle({
+        id: articleId,
+        ...formState
+      });
       message.success("修改成功");
     } else {
       // 创建文章
-      await articleApi.create(formState);
+      await createArticle(formState);
       message.success("发布成功");
     }
     router.push("/article/list");
-  } catch (error) {
-    message.error(isEdit.value ? "修改失败" : "发布失败");
+  } catch (error: any) {
+    message.error(error.message || (isEdit.value ? "修改失败" : "发布失败"));
     console.error(error);
   } finally {
     submitting.value = false;
