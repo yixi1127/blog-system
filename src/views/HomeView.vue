@@ -164,7 +164,8 @@ import {
   UnorderedListOutlined,
   UserOutlined,
 } from "@ant-design/icons-vue";
-import { articleApi, categoryApi } from "../later/api";
+import { getArticleList } from "../api/article";
+import { getCategoryList } from "../api/category";
 
 const router = useRouter();
 const loading = ref(false);
@@ -184,21 +185,21 @@ const recentArticles = ref<any[]>([]);
 const loadStatistics = async () => {
   try {
     // 获取所有文章
-    const articlesResult = await articleApi.getList({ pageSize: 9999 });
-    const articles = articlesResult.list;
+    const articlesResult = await getArticleList({ pageSize: 9999 });
+    const articles = articlesResult.list || [];
 
     // 计算统计数据
     statistics.value.totalArticles = articles.length;
     statistics.value.publishedArticles = articles.filter(
-      (a) => a.status === "published"
+      (a: any) => a.status === "published"
     ).length;
     statistics.value.draftArticles = articles.filter(
-      (a) => a.status === "draft"
+      (a: any) => a.status === "draft"
     ).length;
 
     // 获取分类数量
-    const categories = await categoryApi.getList();
-    statistics.value.totalCategories = categories.length;
+    const categoriesResult = await getCategoryList();
+    statistics.value.totalCategories = (categoriesResult.list || []).length;
 
     // 获取最近3篇文章
     recentArticles.value = articles.slice(0, 3);
