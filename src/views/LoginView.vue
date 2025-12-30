@@ -86,28 +86,29 @@ const formState = reactive({
 const handleLogin = async () => {
   loading.value = true;
   try {
-    // 模拟登录API
-    setTimeout(() => {
-      // 简单验证
-      if (formState.username === "admin" && formState.password === "123456") {
-        message.success("登录成功");
-        // 保存登录状态到localStorage
-        localStorage.setItem(
-          "userInfo",
-          JSON.stringify({
-            username: formState.username,
-            token: "mock-token-" + Date.now(),
-          })
-        );
-        // 跳转到首页
-        router.push("/");
-      } else {
-        message.error("用户名或密码错误");
-      }
-      loading.value = false;
-    }, 1000);
+    const response = await fetch('/.netlify/functions/auth-login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        username: formState.username,
+        password: formState.password
+      })
+    });
+
+    const data = await response.json();
+
+    if (response.ok && data.success) {
+      message.success('登录成功');
+      // 保存 token 和用户信息
+      localStorage.setItem('token', data.token);
+      localStorage.setItem('userInfo', JSON.stringify(data.user));
+      router.push('/');
+    } else {
+      message.error(data.error || '登录失败');
+    }
   } catch (error) {
-    message.error("登录失败，请稍后重试");
+    message.error('登录失败，请稍后重试');
+  } finally {
     loading.value = false;
   }
 };

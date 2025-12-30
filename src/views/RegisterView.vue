@@ -142,15 +142,27 @@ const validatePassword = async (_rule: any, value: string) => {
 const handleRegister = async () => {
   loading.value = true;
   try {
-    // 模拟注册API
-    setTimeout(() => {
-      message.success("注册成功，请登录");
-      loading.value = false;
-      // 跳转到登录页
-      router.push("/user/login");
-    }, 1000);
+    const response = await fetch('/.netlify/functions/auth-register', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        username: formState.username,
+        email: formState.email,
+        password: formState.password
+      })
+    });
+
+    const data = await response.json();
+
+    if (response.ok && data.success) {
+      message.success('注册成功，请登录');
+      router.push('/user/login');
+    } else {
+      message.error(data.error || '注册失败');
+    }
   } catch (error) {
-    message.error("注册失败，请稍后重试");
+    message.error('注册失败，请稍后重试');
+  } finally {
     loading.value = false;
   }
 };
